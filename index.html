@@ -1,0 +1,1414 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f3ea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="英语学习">
+  <title>英语六级学习进度</title>
+  <style>
+    :root {
+      --bg: #f7f3ea;
+      --surface: #fffaf0;
+      --surface-2: #ffffff;
+      --ink: #24302b;
+      --muted: #6b766f;
+      --line: #ded6c6;
+      --primary: #24746b;
+      --primary-2: #dff1ed;
+      --accent: #b85042;
+      --accent-2: #f4dfd8;
+      --gold: #a7791f;
+      --shadow: 0 14px 36px rgba(52, 44, 30, .12);
+      --radius: 8px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(36, 116, 107, .08), rgba(36, 116, 107, 0) 260px),
+        var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .app {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 18px 14px 92px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 10px 0 18px;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      font-size: clamp(26px, 7vw, 44px);
+      line-height: 1.05;
+      font-weight: 850;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: var(--primary);
+      background: var(--primary-2);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      padding: 8px 8px calc(8px + var(--safe-bottom));
+      border-top: 1px solid var(--line);
+      background: rgba(255, 250, 240, .94);
+      backdrop-filter: blur(16px);
+    }
+
+    .nav-btn {
+      min-width: 0;
+      min-height: 50px;
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: transparent;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .nav-btn.active {
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .metric,
+    .panel,
+    .phase-card,
+    .task-card,
+    .resource-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      box-shadow: var(--shadow);
+    }
+
+    .metric {
+      min-height: 96px;
+      padding: 14px;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .metric-value {
+      margin-top: 8px;
+      font-size: 25px;
+      line-height: 1.1;
+      font-weight: 850;
+    }
+
+    .metric-note {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 18px 0 10px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 850;
+    }
+
+    .panel {
+      padding: 16px;
+    }
+
+    .progress-line {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #ece5d7;
+    }
+
+    .progress-line span {
+      display: block;
+      width: var(--pct);
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--primary), #4d9f82);
+    }
+
+    .home-current {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .ring {
+      width: 168px;
+      height: 168px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--primary) var(--deg), #ece5d7 0);
+      margin: 0 auto;
+    }
+
+    .ring-inner {
+      width: 118px;
+      height: 118px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--surface-2);
+      font-size: 28px;
+      font-weight: 850;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.35;
+      font-weight: 850;
+    }
+
+    .card-text {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: var(--surface);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tag.primary {
+      border-color: transparent;
+      color: var(--primary);
+      background: var(--primary-2);
+    }
+
+    .tag.warn {
+      border-color: transparent;
+      color: var(--accent);
+      background: var(--accent-2);
+    }
+
+    .phase-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .phase-card {
+      padding: 14px;
+    }
+
+    .phase-top,
+    .task-top,
+    .resource-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .phase-title {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.35;
+      font-weight: 850;
+    }
+
+    .phase-meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .phase-pct {
+      flex: 0 0 auto;
+      color: var(--primary);
+      font-size: 17px;
+      font-weight: 850;
+    }
+
+    .toolbar {
+      display: grid;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .search-input,
+    .text-input,
+    .textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      color: var(--ink);
+      outline: none;
+    }
+
+    .search-input,
+    .text-input {
+      min-height: 44px;
+      padding: 0 12px;
+    }
+
+    .textarea {
+      min-height: 112px;
+      padding: 12px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .filter-row::-webkit-scrollbar { display: none; }
+
+    .filter-btn,
+    .action-btn,
+    .link-btn,
+    .tiny-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: var(--radius);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .filter-btn {
+      min-height: 38px;
+      padding: 0 12px;
+      color: var(--muted);
+      background: #ede6d8;
+    }
+
+    .filter-btn.active {
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .action-btn {
+      min-height: 44px;
+      padding: 0 14px;
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .action-btn.secondary {
+      color: var(--primary);
+      background: var(--primary-2);
+    }
+
+    .action-btn.danger {
+      color: var(--accent);
+      background: var(--accent-2);
+    }
+
+    .tiny-btn {
+      min-height: 32px;
+      padding: 0 9px;
+      color: var(--primary);
+      background: var(--primary-2);
+      font-size: 12px;
+    }
+
+    .task-list,
+    .resource-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .task-card {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 10px;
+      padding: 13px;
+    }
+
+    .check-btn {
+      width: 34px;
+      height: 34px;
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      background: var(--surface);
+      color: transparent;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .task-card.done .check-btn {
+      border-color: var(--primary);
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .task-card.done .task-title {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .task-title {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.4;
+      font-weight: 850;
+    }
+
+    .task-detail {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .link-btn {
+      min-height: 32px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      color: var(--primary);
+      background: var(--surface);
+      font-size: 12px;
+    }
+
+    .today-grid,
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .resource-card {
+      padding: 14px;
+    }
+
+    .resource-title {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.35;
+      font-weight: 850;
+    }
+
+    .resource-desc {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .empty {
+      padding: 18px;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: rgba(255, 250, 240, .55);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(78px + var(--safe-bottom));
+      z-index: 30;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(36, 48, 43, .92);
+      font-size: 13px;
+      transition: .22s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    @media (max-width: 780px) {
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .home-current,
+      .today-grid,
+      .settings-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .phase-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .ring {
+        width: 148px;
+        height: 148px;
+      }
+
+      .ring-inner {
+        width: 104px;
+        height: 104px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .app {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .metric {
+        padding: 12px;
+      }
+
+      .metric-value {
+        font-size: 22px;
+      }
+
+      .nav-btn {
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="title-block">
+        <h1>英语六级学习进度</h1>
+        <div class="subtitle">四级刚过线起步，避开 9 月法考，把课程、真题、打卡和复盘放在一个手机页面里。</div>
+      </div>
+      <div class="pill" id="stagePill">加载中</div>
+    </header>
+
+    <section class="page active" id="page-home"></section>
+    <section class="page" id="page-plan"></section>
+    <section class="page" id="page-today"></section>
+    <section class="page" id="page-resources"></section>
+    <section class="page" id="page-settings"></section>
+  </main>
+
+  <nav class="nav" aria-label="页面导航">
+    <button class="nav-btn active" data-page="home" type="button">首页</button>
+    <button class="nav-btn" data-page="plan" type="button">路线</button>
+    <button class="nav-btn" data-page="today" type="button">今日</button>
+    <button class="nav-btn" data-page="resources" type="button">资源</button>
+    <button class="nav-btn" data-page="settings" type="button">设置</button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORAGE_KEY = "englishStudyRoadmapProgress_v1";
+
+    const phases = [
+      {
+        id: "diagnosis",
+        order: 1,
+        short: "建档",
+        title: "诊断建档与基础修复",
+        range: "5.18-6.14",
+        goal: "重新激活四级基础，补词汇、语法、听力习惯，建立错题本。",
+        output: "完成基础诊断、词汇 1 轮、语法核心 6 节。"
+      },
+      {
+        id: "cet6-basic",
+        order: 2,
+        short: "六级入门",
+        title: "六级听读入门",
+        range: "6.15-7.26",
+        goal: "进入六级题型，优先解决听力听不住、阅读定位慢的问题。",
+        output: "完成六级词汇、听力、阅读导学和半套真题训练。"
+      },
+      {
+        id: "breakthrough",
+        order: 3,
+        short: "专项",
+        title: "专项突破与写译成型",
+        range: "7.27-8.30",
+        goal: "让阅读、写作、翻译形成固定解题动作，开始整套真题节奏。",
+        output: "完成写译课程、阅读专项、每周 1 套拆练。"
+      },
+      {
+        id: "law-protect",
+        order: 4,
+        short: "法考",
+        title: "法考保护期",
+        range: "9.1-9.20",
+        goal: "只保留英语手感，把主要精力让给法考客观题。",
+        output: "每天 20 分钟以内，词汇和听力不断档。"
+      },
+      {
+        id: "recover",
+        order: 5,
+        short: "恢复",
+        title: "恢复节奏与模板整理",
+        range: "9.21-10.18",
+        goal: "从法考节奏切回六级，补齐写译和真题复盘。",
+        output: "作文模板、翻译主题词、近年真题错题表。"
+      },
+      {
+        id: "intensive",
+        order: 6,
+        short: "强化",
+        title: "真题强化",
+        range: "10.19-11.22",
+        goal: "套题训练和错因归类并重，提升稳定性和速度。",
+        output: "每周 1-2 套真题，形成个人易错清单。"
+      },
+      {
+        id: "sprint",
+        order: 7,
+        short: "冲刺",
+        title: "考前冲刺",
+        range: "11.23-12 月考试",
+        goal: "停止开新课，回看错题、模板、主题词，保持考试状态。",
+        output: "作文 8 套句型、翻译 12 类主题词、模考节奏。"
+      },
+      {
+        id: "ielts",
+        order: 8,
+        short: "雅思",
+        title: "雅思/托福底子维护",
+        range: "贯穿全程",
+        goal: "六级前只做听说底座，不和六级主线抢时间。",
+        output: "每周 1-2 次口语录音，雅思听力方法初步入门。"
+      }
+    ];
+
+    const resources = [
+      {
+        id: "duia",
+        category: "主线",
+        title: "对啊网 四级六级完整精讲真题课程",
+        desc: "199 集，覆盖词汇、听力、阅读、翻译、写作、口语。主线课程。",
+        url: "https://www.bilibili.com/video/BV1Lb411U7kX/"
+      },
+      {
+        id: "yingyutu-grammar",
+        category: "语法",
+        title: "英语兔语法精讲合集",
+        desc: "用于补语法底层：时态、被动、从句、非谓语、句子成分。",
+        url: "https://www.bilibili.com/video/BV1XY411J7aG/"
+      },
+      {
+        id: "tuo-vocab",
+        category: "词汇",
+        title: "TUO 图欧君 四六级核心 1500 词",
+        desc: "适合背词后的快速查漏补缺和默写自测。",
+        url: "https://www.bilibili.com/video/BV1MS4y1973Q/"
+      },
+      {
+        id: "risibai-reading",
+        category: "阅读",
+        title: "瑞斯拜四六级长篇阅读技巧",
+        desc: "用于训练长篇匹配、定位和阅读速度。",
+        url: "https://www.bilibili.com/video/BV1Ea411i7Da/"
+      },
+      {
+        id: "ielts-listening",
+        category: "雅思",
+        title: "LittleBear 雅思听力零基础课",
+        desc: "六级前轻量维护听力方法，六级后可转为雅思主线。",
+        url: "https://www.bilibili.com/video/BV15b421q7hM/"
+      },
+      {
+        id: "cet-official",
+        category: "官方",
+        title: "全国大学英语四、六级考试官网",
+        desc: "查看报名、考试时间、成绩查询等官方信息。",
+        url: "https://cet.neea.edu.cn/"
+      }
+    ];
+
+    const tasks = [
+      task("d-01", "diagnosis", "完成 1 套四级或六级诊断卷", "不追求分数，记录听力、阅读、写译各部分主要失分原因。", 3, "诊断", ["cet-official"]),
+      task("d-02", "diagnosis", "建立英语错题本", "分为词汇、听力、阅读、写作、翻译、口语 6 个栏目。", 1, "管理", []),
+      task("d-03", "diagnosis", "对啊四级词汇 001-006", "看概论、词根思路和高频词串讲开头；每节后默写 20 个词。", 4, "词汇", ["duia"]),
+      task("d-04", "diagnosis", "对啊四级词汇 007-018", "完成高频核心词汇串讲 1-12，标记不熟词。", 8, "词汇", ["duia"]),
+      task("d-05", "diagnosis", "英语兔语法：语法综述、时态、被动", "只做应试必需理解，不钻太细。", 3, "语法", ["yingyutu-grammar"]),
+      task("d-06", "diagnosis", "英语兔语法：从句、非谓语、句子成分", "每节整理 5 个自己能仿写的例句。", 4, "语法", ["yingyutu-grammar"]),
+      task("d-07", "diagnosis", "对啊四级听力 1-10", "听考情、原则、新闻、长对话、篇章练习；错题逐句精听。", 6, "听力", ["duia"]),
+      task("d-08", "diagnosis", "完成 2 篇四级阅读限时训练", "重点练定位，不纠结难词。", 2, "阅读", ["duia"]),
+      task("d-09", "diagnosis", "TUO 1500 词四级部分自测", "用默写本暂停自测，筛出 100 个顽固词。", 2, "词汇", ["tuo-vocab"]),
+
+      task("b-01", "cet6-basic", "对啊六级词汇 001-006", "看六级词汇概述和抛砖引玉，建立六级高频词表。", 4, "词汇", ["duia"]),
+      task("b-02", "cet6-basic", "对啊六级词汇 007-012", "继续词汇课程，每节课后写 10 个英文短语搭配。", 4, "词汇", ["duia"]),
+      task("b-03", "cet6-basic", "对啊六级听力 1-4", "考情、解题原则、常考考点、答题三步走。", 4, "听力", ["duia"]),
+      task("b-04", "cet6-basic", "对啊六级听力 5-10", "长对话、篇章、讲座考情和练习，错题做精听。", 6, "听力", ["duia"]),
+      task("b-05", "cet6-basic", "对啊六级阅读 1-5", "考情、仔细阅读、细节题、推断题。", 4, "阅读", ["duia"]),
+      task("b-06", "cet6-basic", "对啊六级阅读 6-9", "长篇阅读、选词填空和真题演练。", 5, "阅读", ["duia"]),
+      task("b-07", "cet6-basic", "完成 2 次半套六级真题", "只做听力 + 阅读，复盘时间要大于做题时间。", 6, "真题", []),
+      task("b-08", "cet6-basic", "整理阅读定位词清单", "记录转折、因果、比较、数字、人名、专有名词等定位信号。", 2, "复盘", []),
+
+      task("x-01", "breakthrough", "瑞斯拜长篇阅读技巧课", "看长篇匹配方法课，立刻用 2 组真题验证。", 4, "阅读", ["risibai-reading"]),
+      task("x-02", "breakthrough", "对啊六级翻译 1-3", "考情、做题方法、时态高频考点。", 3, "翻译", ["duia"]),
+      task("x-03", "breakthrough", "对啊六级翻译 4-6", "被动、逻辑关系、复合句式。", 3, "翻译", ["duia"]),
+      task("x-04", "breakthrough", "对啊六级翻译真题实战 1-3", "每段翻译后做表达替换，不只对答案。", 4, "翻译", ["duia"]),
+      task("x-05", "breakthrough", "对啊六级写作 1-3", "考情、考纲、写作方法，形成自己的基础模板。", 3, "写作", ["duia"]),
+      task("x-06", "breakthrough", "对啊六级写作 4-8", "论说文和图表作文各写 1 篇。", 5, "写作", ["duia"]),
+      task("x-07", "breakthrough", "每周 1 套六级真题拆练", "按听力、阅读、写译拆开做，最后统一复盘。", 8, "真题", []),
+      task("x-08", "breakthrough", "制作写作句型 20 条", "只保留自己考试能写出来的句型。", 2, "写作", []),
+
+      task("l-01", "law-protect", "法考周英语不断档 1", "每天 10 分钟复习顽固词，最多 50 个。", 2, "保护期", ["tuo-vocab"]),
+      task("l-02", "law-protect", "法考周英语不断档 2", "每天 10 分钟听力泛听或跟读，不做套题。", 2, "保护期", ["duia"]),
+      task("l-03", "law-protect", "9 月 12-13 日法考客观题", "英语暂停，只保留考试后 1 天轻量复盘。", 1, "法考", []),
+
+      task("r-01", "recover", "恢复六级听力精听", "选 1 套旧错题，逐句听写 20 分钟。", 3, "听力", []),
+      task("r-02", "recover", "补完对啊六级写作 9-11", "图表、图画作文课程，合并进个人模板。", 3, "写作", ["duia"]),
+      task("r-03", "recover", "六级翻译主题词整理", "教育、科技、文化、经济、环境、城市 6 类。", 4, "翻译", []),
+      task("r-04", "recover", "完成 2 套真题", "先恢复速度，再看正确率。", 8, "真题", []),
+      task("r-05", "recover", "主观题阶段低负荷维护", "如果要考 10 月 18 日主观题，本任务只做词汇和听力。", 2, "保护期", []),
+
+      task("i-01", "intensive", "真题 1：完整模拟", "严格计时，记录每部分耗时。", 4, "真题", []),
+      task("i-02", "intensive", "真题 2：听力专项复盘", "错题反复听，整理听不出的连读、弱读和关键词。", 4, "听力", []),
+      task("i-03", "intensive", "真题 3：阅读专项复盘", "每道错题写出定位句和错误选项原因。", 4, "阅读", []),
+      task("i-04", "intensive", "写作 4 篇限时训练", "每篇 30 分钟，重点保证结构完整。", 5, "写作", []),
+      task("i-05", "intensive", "翻译 8 段主题训练", "每段先自己写，再整理可复用表达。", 5, "翻译", []),
+      task("i-06", "intensive", "建立个人错因排行榜", "列出前 10 个反复错因，下周只攻前三个。", 2, "复盘", []),
+
+      task("s-01", "sprint", "模考 1：完整套题", "模拟下午 15:00-17:25 的六级考试时间。", 4, "模考", []),
+      task("s-02", "sprint", "模考 2：完整套题", "只看错题和时间分配，不再开新课。", 4, "模考", []),
+      task("s-03", "sprint", "作文模板压缩到 8 套句型", "每套句型要能 5 分钟内默写出来。", 3, "写作", []),
+      task("s-04", "sprint", "翻译主题词最后一轮", "文化、科技、经济、社会、生态、教育、历史、交通。", 3, "翻译", []),
+      task("s-05", "sprint", "听力错题最后一轮", "只听旧错题，保持手感。", 3, "听力", []),
+      task("s-06", "sprint", "考前轻量复盘", "考前 48 小时不刷难题，只看模板、词表、错题。", 2, "复盘", []),
+
+      task("y-01", "ielts", "雅思听力入门 01-03", "了解雅思流程、读题、语音现象、精听跟读方法。", 4, "雅思", ["ielts-listening"]),
+      task("y-02", "ielts", "每周 1 次英文口语录音", "围绕工作、家庭、学习、城市、科技各说 1 分钟。", 4, "口语", []),
+      task("y-03", "ielts", "六级后雅思/托福选择复盘", "六级考完后根据留学/优才材料需要选择雅思或托福。", 1, "规划", [])
+    ];
+
+    function task(id, phase, title, detail, hours, type, resourceIds) {
+      return { id, phase, title, detail, hours, type, resourceIds };
+    }
+
+    const defaultState = {
+      done: {},
+      logs: {},
+      settings: {
+        startDate: "2026-05-18",
+        examDate: "2026-12-12",
+        weeklyHours: 10
+      }
+    };
+
+    let state = loadState();
+    let currentPage = "home";
+    let planPhase = "all";
+    let planStatus = "todo";
+    let planType = "all";
+    let resourceCategory = "all";
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        return {
+          ...defaultState,
+          ...saved,
+          settings: { ...defaultState.settings, ...(saved && saved.settings ? saved.settings : {}) },
+          done: saved && saved.done ? saved.done : {},
+          logs: saved && saved.logs ? saved.logs : {}
+        };
+      } catch (error) {
+        return JSON.parse(JSON.stringify(defaultState));
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function todayKey() {
+      const now = new Date();
+      return now.toISOString().slice(0, 10);
+    }
+
+    function daysBetween(a, b) {
+      const start = new Date(a + "T00:00:00");
+      const end = new Date(b + "T00:00:00");
+      return Math.ceil((end - start) / 86400000);
+    }
+
+    function htmlEscape(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function phaseById(id) {
+      return phases.find((phase) => phase.id === id);
+    }
+
+    function resourceById(id) {
+      return resources.find((resource) => resource.id === id);
+    }
+
+    function phaseTasks(phaseId) {
+      return tasks.filter((item) => item.phase === phaseId);
+    }
+
+    function doneTasks() {
+      return tasks.filter((item) => state.done[item.id]);
+    }
+
+    function totalHours(list = tasks) {
+      return list.reduce((sum, item) => sum + item.hours, 0);
+    }
+
+    function doneHours(list = tasks) {
+      return list.filter((item) => state.done[item.id]).reduce((sum, item) => sum + item.hours, 0);
+    }
+
+    function phaseProgress(phaseId) {
+      const list = phaseTasks(phaseId);
+      const done = list.filter((item) => state.done[item.id]).length;
+      const hours = totalHours(list);
+      const completedHours = doneHours(list);
+      const pct = hours ? Math.round((completedHours / hours) * 100) : 0;
+      return { total: list.length, done, hours, completedHours, pct };
+    }
+
+    function overallProgress() {
+      const done = doneTasks().length;
+      const completedHours = doneHours();
+      const hours = totalHours();
+      const pct = hours ? Math.round((completedHours / hours) * 100) : 0;
+      return { total: tasks.length, done, hours, completedHours, pct };
+    }
+
+    function currentPhaseData() {
+      return phases.find((phase) => phaseProgress(phase.id).pct < 100) || phases[phases.length - 1];
+    }
+
+    function nextTask() {
+      return tasks.find((item) => !state.done[item.id]) || null;
+    }
+
+    function learnedMinutesTotal() {
+      return Object.values(state.logs).reduce((sum, log) => sum + Number(log.minutes || 0), 0);
+    }
+
+    function render() {
+      const phase = currentPhaseData();
+      $("#stagePill").textContent = `${phase.short} · ${phase.range}`;
+      $$(".page").forEach((page) => page.classList.toggle("active", page.id === `page-${currentPage}`));
+      $$(".nav-btn").forEach((btn) => btn.classList.toggle("active", btn.dataset.page === currentPage));
+
+      if (currentPage === "home") renderHome();
+      if (currentPage === "plan") renderPlan();
+      if (currentPage === "today") renderToday();
+      if (currentPage === "resources") renderResources();
+      if (currentPage === "settings") renderSettings();
+    }
+
+    function renderHome() {
+      const overall = overallProgress();
+      const phase = currentPhaseData();
+      const phaseStat = phaseProgress(phase.id);
+      const next = nextTask();
+      const daysLeft = Math.max(0, daysBetween(todayKey(), state.settings.examDate));
+      const learnedHours = Math.round(learnedMinutesTotal() / 60 * 10) / 10;
+      const startDays = Math.max(1, daysBetween(state.settings.startDate, todayKey()) + 1);
+      const expectedHours = Math.round((startDays / 7) * Number(state.settings.weeklyHours || 10));
+      const speed = expectedHours ? Math.round((learnedHours / expectedHours) * 100) : 0;
+
+      $("#page-home").innerHTML = `
+        <div class="metrics">
+          ${metric("总进度", `${overall.pct}%`, `${overall.done}/${overall.total} 项 · ${overall.completedHours}/${overall.hours} 小时`)}
+          ${metric("当前阶段", phase.short, `${phaseStat.done}/${phaseStat.total} 项 · ${phaseStat.pct}%`)}
+          ${metric("距离六级", `${daysLeft} 天`, "12 月具体日期以官方通知为准")}
+          ${metric("学习时长", `${learnedHours}h`, `目标节奏 ${speed}%`)}
+        </div>
+
+        <div class="section-head">
+          <h2 class="section-title">当前推进</h2>
+          <button class="tiny-btn" data-jump="plan" type="button">全部任务</button>
+        </div>
+        <section class="panel home-current">
+          <div class="ring" style="--deg:${phaseStat.pct * 3.6}deg">
+            <div class="ring-inner">${phaseStat.pct}%</div>
+          </div>
+          <div>
+            <h3 class="card-title">${htmlEscape(phase.title)}</h3>
+            <p class="card-text">${htmlEscape(phase.goal)}</p>
+            <div class="tag-row">
+              <span class="tag primary">${htmlEscape(phase.range)}</span>
+              <span class="tag">${phaseStat.completedHours}/${phaseStat.hours} 小时</span>
+              ${phase.id === "law-protect" ? '<span class="tag warn">法考保护期</span>' : ""}
+            </div>
+          </div>
+        </section>
+
+        <div class="section-head">
+          <h2 class="section-title">下一步</h2>
+          <button class="tiny-btn" data-page="today" type="button">去打卡</button>
+        </div>
+        ${next ? taskCard(next, { showLinks: true }) : empty("所有任务已完成，可以开始雅思或托福正式备考。")}
+
+        <div class="section-head">
+          <h2 class="section-title">阶段总览</h2>
+        </div>
+        <div class="phase-grid">
+          ${phases.map(phaseCard).join("")}
+        </div>
+      `;
+    }
+
+    function metric(label, value, note) {
+      return `
+        <div class="metric">
+          <div class="metric-label">${htmlEscape(label)}</div>
+          <div class="metric-value">${htmlEscape(value)}</div>
+          <div class="metric-note">${htmlEscape(note)}</div>
+        </div>
+      `;
+    }
+
+    function phaseCard(phase) {
+      const stat = phaseProgress(phase.id);
+      return `
+        <article class="phase-card">
+          <div class="phase-top">
+            <div>
+              <h3 class="phase-title">${phase.order}. ${htmlEscape(phase.title)}</h3>
+              <div class="phase-meta">${htmlEscape(phase.range)} · ${htmlEscape(phase.output)}</div>
+            </div>
+            <div class="phase-pct">${stat.pct}%</div>
+          </div>
+          <div class="progress-line" style="--pct:${stat.pct}%"><span></span></div>
+          <div class="tag-row">
+            <span class="tag primary">${htmlEscape(phase.short)}</span>
+            <span class="tag">${stat.done}/${stat.total} 项</span>
+            <span class="tag">${stat.completedHours}/${stat.hours} 小时</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderPlan() {
+      const phaseOptions = [{ id: "all", short: "全部" }].concat(phases);
+      const typeOptions = ["all"].concat(Array.from(new Set(tasks.map((item) => item.type))));
+      const search = $("#planSearch") ? $("#planSearch").value.trim().toLowerCase() : "";
+      let list = tasks.slice();
+      if (planPhase !== "all") list = list.filter((item) => item.phase === planPhase);
+      if (planType !== "all") list = list.filter((item) => item.type === planType);
+      if (planStatus === "todo") list = list.filter((item) => !state.done[item.id]);
+      if (planStatus === "done") list = list.filter((item) => state.done[item.id]);
+      if (search) {
+        list = list.filter((item) =>
+          [item.title, item.detail, item.type, phaseById(item.phase).title].join(" ").toLowerCase().includes(search)
+        );
+      }
+
+      $("#page-plan").innerHTML = `
+        <div class="toolbar">
+          <input class="search-input" id="planSearch" type="search" placeholder="搜索任务、阶段或类型" value="${htmlEscape(search)}">
+          <div class="filter-row">
+            ${phaseOptions.map((phase) => `<button class="filter-btn ${planPhase === phase.id ? "active" : ""}" type="button" data-phase="${phase.id}">${htmlEscape(phase.short)}</button>`).join("")}
+          </div>
+          <div class="filter-row">
+            ${typeOptions.map((type) => `<button class="filter-btn ${planType === type ? "active" : ""}" type="button" data-type="${htmlEscape(type)}">${type === "all" ? "全部类型" : htmlEscape(type)}</button>`).join("")}
+          </div>
+          <div class="filter-row">
+            ${statusButton("todo", "未完成")}
+            ${statusButton("done", "已完成")}
+            ${statusButton("all", "全部状态")}
+          </div>
+        </div>
+        <div class="task-list">
+          ${list.length ? list.map((item) => taskCard(item, { showLinks: true })).join("") : empty("没有匹配的学习任务。")}
+        </div>
+      `;
+    }
+
+    function statusButton(id, label) {
+      return `<button class="filter-btn ${planStatus === id ? "active" : ""}" type="button" data-status="${id}">${label}</button>`;
+    }
+
+    function taskCard(item, options = {}) {
+      const done = Boolean(state.done[item.id]);
+      const phase = phaseById(item.phase);
+      const links = (item.resourceIds || []).map(resourceById).filter(Boolean);
+      return `
+        <article class="task-card ${done ? "done" : ""}">
+          <button class="check-btn" type="button" data-task="${item.id}" aria-label="${done ? "标记未完成" : "标记完成"}">${done ? "✓" : ""}</button>
+          <div>
+            <div class="task-top">
+              <h3 class="task-title">${htmlEscape(item.title)}</h3>
+              <span class="tag">${item.hours}h</span>
+            </div>
+            <p class="task-detail">${htmlEscape(item.detail)}</p>
+            <div class="tag-row">
+              <span class="tag primary">${htmlEscape(phase.short)}</span>
+              <span class="tag">${htmlEscape(item.type)}</span>
+              <span class="tag">${htmlEscape(phase.range)}</span>
+              ${phase.id === "law-protect" ? '<span class="tag warn">保护期</span>' : ""}
+            </div>
+            ${options.showLinks && links.length ? `
+              <div class="links">
+                ${links.map((resource) => `<a class="link-btn" href="${resource.url}" target="_blank" rel="noopener">${htmlEscape(resource.title)}</a>`).join("")}
+              </div>
+            ` : ""}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderToday() {
+      const key = todayKey();
+      const log = state.logs[key] || { minutes: "", note: "" };
+      const next = nextTask();
+      const recent = Object.entries(state.logs)
+        .sort((a, b) => b[0].localeCompare(a[0]))
+        .slice(0, 7);
+
+      $("#page-today").innerHTML = `
+        <div class="today-grid">
+          <section class="panel">
+            <h2 class="card-title">${new Date().toLocaleDateString("zh-CN", { month: "long", day: "numeric", weekday: "long" })}</h2>
+            <p class="card-text">今天只记三件事：学了多久、完成了什么、哪里卡住了。</p>
+            <div class="field">
+              <label for="todayMinutes">学习分钟数</label>
+              <input class="text-input" id="todayMinutes" type="number" min="0" step="5" inputmode="numeric" value="${htmlEscape(log.minutes || "")}" placeholder="例如 45">
+            </div>
+            <div class="field">
+              <label for="todayNote">今日笔记</label>
+              <textarea class="textarea" id="todayNote" placeholder="例：六级听力长对话错 3 题，主要是没抓到转折词。">${htmlEscape(log.note || "")}</textarea>
+            </div>
+            <div class="button-row">
+              <button class="action-btn" type="button" data-action="save-log">保存打卡</button>
+              ${next ? `<button class="action-btn secondary" type="button" data-action="finish-next">完成下一项</button>` : ""}
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head" style="margin-top:0">
+              <h2 class="section-title">下一项任务</h2>
+              <button class="tiny-btn" type="button" data-jump="plan">路线</button>
+            </div>
+            ${next ? taskCard(next, { showLinks: true }) : empty("今天没有待完成任务。")}
+          </section>
+        </div>
+
+        <div class="section-head">
+          <h2 class="section-title">最近打卡</h2>
+        </div>
+        <div class="grid">
+          ${recent.length ? recent.map(([date, item]) => `
+            <section class="panel">
+              <h3 class="card-title">${htmlEscape(date)} · ${Number(item.minutes || 0)} 分钟</h3>
+              <p class="card-text">${htmlEscape(item.note || "没有记录笔记。")}</p>
+            </section>
+          `).join("") : empty("还没有打卡记录。")}
+        </div>
+      `;
+    }
+
+    function renderResources() {
+      const categories = ["all"].concat(Array.from(new Set(resources.map((item) => item.category))));
+      const search = $("#resourceSearch") ? $("#resourceSearch").value.trim().toLowerCase() : "";
+      let list = resources.slice();
+      if (resourceCategory !== "all") list = list.filter((item) => item.category === resourceCategory);
+      if (search) {
+        list = list.filter((item) => [item.title, item.desc, item.category].join(" ").toLowerCase().includes(search));
+      }
+
+      $("#page-resources").innerHTML = `
+        <div class="toolbar">
+          <input class="search-input" id="resourceSearch" type="search" placeholder="搜索课程或资源" value="${htmlEscape(search)}">
+          <div class="filter-row">
+            ${categories.map((category) => `
+              <button class="filter-btn ${resourceCategory === category ? "active" : ""}" type="button" data-resource-category="${category}">
+                ${category === "all" ? "全部资源" : htmlEscape(category)}
+              </button>
+            `).join("")}
+          </div>
+        </div>
+        <div class="resource-list">
+          ${list.map((item) => `
+            <article class="resource-card">
+              <div class="resource-top">
+                <div>
+                  <h3 class="resource-title">${htmlEscape(item.title)}</h3>
+                  <p class="resource-desc">${htmlEscape(item.desc)}</p>
+                </div>
+                <span class="tag primary">${htmlEscape(item.category)}</span>
+              </div>
+              <div class="links">
+                <a class="link-btn" href="${item.url}" target="_blank" rel="noopener">打开链接</a>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderSettings() {
+      $("#page-settings").innerHTML = `
+        <div class="settings-grid">
+          <section class="panel">
+            <h2 class="card-title">学习节奏</h2>
+            <p class="card-text">中年学习者建议每周 8-12 小时；法考保护期可以降到 2 小时以内。</p>
+            <div class="field">
+              <label for="startDate">计划开始日期</label>
+              <input class="text-input" id="startDate" type="date" value="${htmlEscape(state.settings.startDate)}">
+            </div>
+            <div class="field">
+              <label for="examDate">六级目标日期</label>
+              <input class="text-input" id="examDate" type="date" value="${htmlEscape(state.settings.examDate)}">
+            </div>
+            <div class="field">
+              <label for="weeklyHours">每周目标小时数</label>
+              <input class="text-input" id="weeklyHours" type="number" min="1" max="40" step="1" value="${htmlEscape(state.settings.weeklyHours)}">
+            </div>
+            <div class="button-row">
+              <button class="action-btn" type="button" data-action="save-settings">保存设置</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2 class="card-title">进度备份</h2>
+            <p class="card-text">进度保存在当前浏览器。换手机或换浏览器前，先导出 JSON，再导入到新设备。</p>
+            <div class="button-row">
+              <button class="action-btn secondary" type="button" data-action="export">导出进度</button>
+              <button class="action-btn secondary" type="button" data-action="import">导入进度</button>
+              <button class="action-btn danger" type="button" data-action="reset">重置进度</button>
+            </div>
+            <input class="file-input" id="importFile" type="file" accept="application/json">
+          </section>
+        </div>
+
+        <div class="section-head">
+          <h2 class="section-title">上传 GitHub Pages</h2>
+        </div>
+        <section class="panel">
+          <p class="card-text">把这个文件夹里的 <strong>index.html</strong> 上传到 GitHub 仓库，进入 Settings -> Pages，选择 main 分支和 /root，即可在手机浏览器打开使用。</p>
+        </section>
+      `;
+    }
+
+    function empty(text) {
+      return `<div class="empty">${htmlEscape(text)}</div>`;
+    }
+
+    function toggleTask(id) {
+      if (state.done[id]) {
+        delete state.done[id];
+        toast("已取消完成");
+      } else {
+        state.done[id] = new Date().toISOString();
+        toast("已标记完成");
+      }
+      saveState();
+      render();
+    }
+
+    function saveLog() {
+      const key = todayKey();
+      const minutes = Number($("#todayMinutes").value || 0);
+      const note = $("#todayNote").value.trim();
+      state.logs[key] = { minutes, note, updatedAt: new Date().toISOString() };
+      saveState();
+      toast("今日打卡已保存");
+      render();
+    }
+
+    function finishNext() {
+      const next = nextTask();
+      if (!next) return;
+      state.done[next.id] = new Date().toISOString();
+      saveState();
+      toast("下一项已完成");
+      render();
+    }
+
+    function saveSettings() {
+      state.settings.startDate = $("#startDate").value || defaultState.settings.startDate;
+      state.settings.examDate = $("#examDate").value || defaultState.settings.examDate;
+      state.settings.weeklyHours = Number($("#weeklyHours").value || 10);
+      saveState();
+      toast("设置已保存");
+      render();
+    }
+
+    function exportProgress() {
+      const payload = {
+        app: "english-study-roadmap",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        state
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `english-study-progress-${todayKey()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("进度已导出");
+    }
+
+    function importProgress(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const payload = JSON.parse(reader.result);
+          const imported = payload.state || payload;
+          state = {
+            ...defaultState,
+            ...imported,
+            settings: { ...defaultState.settings, ...(imported.settings || {}) },
+            done: imported.done || {},
+            logs: imported.logs || {}
+          };
+          saveState();
+          toast("进度已导入");
+          render();
+        } catch (error) {
+          toast("导入失败，请检查 JSON 文件");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    }
+
+    function resetProgress() {
+      const ok = window.confirm("确定要重置所有完成记录和打卡吗？这个操作不能撤销。");
+      if (!ok) return;
+      state = JSON.parse(JSON.stringify(defaultState));
+      saveState();
+      toast("进度已重置");
+      render();
+    }
+
+    let toastTimer = null;
+    function toast(message) {
+      const node = $("#toast");
+      node.textContent = message;
+      node.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => node.classList.remove("show"), 1600);
+    }
+
+    document.body.addEventListener("click", (event) => {
+      const nav = event.target.closest("[data-page]");
+      if (nav) {
+        currentPage = nav.dataset.page;
+        render();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const jump = event.target.closest("[data-jump]");
+      if (jump) {
+        currentPage = jump.dataset.jump;
+        render();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const taskBtn = event.target.closest("[data-task]");
+      if (taskBtn) {
+        toggleTask(taskBtn.dataset.task);
+        return;
+      }
+
+      const phaseBtn = event.target.closest("[data-phase]");
+      if (phaseBtn) {
+        planPhase = phaseBtn.dataset.phase;
+        renderPlan();
+        return;
+      }
+
+      const typeBtn = event.target.closest("[data-type]");
+      if (typeBtn) {
+        planType = typeBtn.dataset.type;
+        renderPlan();
+        return;
+      }
+
+      const statusBtn = event.target.closest("[data-status]");
+      if (statusBtn) {
+        planStatus = statusBtn.dataset.status;
+        renderPlan();
+        return;
+      }
+
+      const resourceBtn = event.target.closest("[data-resource-category]");
+      if (resourceBtn) {
+        resourceCategory = resourceBtn.dataset.resourceCategory;
+        renderResources();
+        return;
+      }
+
+      const action = event.target.closest("[data-action]");
+      if (!action) return;
+      const name = action.dataset.action;
+      if (name === "save-log") saveLog();
+      if (name === "finish-next") finishNext();
+      if (name === "save-settings") saveSettings();
+      if (name === "export") exportProgress();
+      if (name === "import") $("#importFile").click();
+      if (name === "reset") resetProgress();
+    });
+
+    document.body.addEventListener("input", (event) => {
+      if (event.target.id === "planSearch") renderPlan();
+      if (event.target.id === "resourceSearch") renderResources();
+    });
+
+    document.body.addEventListener("change", (event) => {
+      if (event.target.id === "importFile") importProgress(event);
+    });
+
+    render();
+  </script>
+</body>
+</html>
