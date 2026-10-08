@@ -31,7 +31,7 @@
 <body>
   <header class="topbar"><div class="brand">英语六级 <small>2026.12</small></div><span class="date-chip" id="todayChip"></span></header>
   <main>
-    <section class="hero"><div class="hero-copy"><div class="eyebrow">CET-6 / Daily execution</div><h1>每天都有默认任务，<br>不用临时决定学什么。</h1><p>通勤负责词汇和输入，晚间负责真题与输出。每项任务只需勾选完成，按天查看学习进度。</p></div><aside class="exam-card"><div><div class="label">六级笔试</div><strong>12月12日 · 15:00</strong><div class="countdown" id="countdown">计算中</div></div><div><div class="rule"></div><div class="time">目标：冲500分｜最近3次模考均分接近480</div></div></aside></section>
+    <section class="hero"><div class="hero-copy"><div class="eyebrow">CET-6 / Daily execution</div><h1>每天都有默认任务，<br>不用临时决定学什么。</h1><p>通勤循环真题片段，晚间完成精听与复述；每项任务只需勾选完成，按天查看学习进度。</p></div><aside class="exam-card"><div><div class="label">六级笔试</div><strong>12月12日 · 15:00</strong><div class="countdown" id="countdown">计算中</div></div><div><div class="rule"></div><div class="time">目标：冲500分｜最近3次模考均分接近480</div></div></aside></section>
     <section class="kpis"><div class="kpi"><span class="num">65</span><span class="label">学习日</span></div><div class="kpi"><span class="num">5</span><span class="label">完整模考</span></div><div class="kpi"><span class="num">当日</span><span class="label">任务当天完成</span></div><div class="kpi"><span class="num">墨墨</span><span class="label">每日不断档</span></div></section>
     <section class="page active" id="page-today"></section><section class="page" id="page-plan"></section><section class="page" id="page-completion"></section>
   </main>
@@ -39,14 +39,30 @@
 
   <script>
     const START = new Date(2026, 9, 8), END = new Date(2026, 11, 11), EXAM = new Date(2026, 11, 12, 15, 0);
-    const STORE = 'cet6_study_plan_2026_v2', COURSE = '01【2026】六级全程2班/02 课程/01 视频/';
-    const LINKS = {
-      voa: { label:'默认推荐：VOA慢速英语播客（B站）', url:'https://www.bilibili.com/video/BV1wb421p7Ln/' },
-      bbc: { label:'默认推荐：BBC 6 Minute English', url:'https://www.youtube.com/watch?v=fcN0BXzK8bg' },
-      ted: { label:'默认推荐：TED-Ed英文字幕（B站）', url:'https://www.bilibili.com/video/BV1ev2cB3E1Y/' }
+    const STORE = 'cet6_study_plan_2026_v5', COURSE = '01【2026】六级全程2班/02 课程/01 视频/';
+    const SPARK_PAPERS = [
+      { label:'2026年6月六级听力真题（一）', trial:true },
+      { label:'2026年6月六级听力真题（一）' },
+      { label:'2026年6月六级听力真题（二）' },
+      { label:'2025年12月六级听力真题（一）' },
+      { label:'2025年12月六级听力真题（二）' },
+      { label:'2025年6月六级考试真题（一）' },
+      { label:'2025年6月六级考试真题（二）' },
+      { label:'2024年12月六级听力真题（一）' },
+      { label:'2024年12月六级听力真题（二）' },
+      { label:'考前回炉：本轮最弱的一套', review:true }
+    ];
+    const SPARK_SEGMENTS = {
+      1:{ label:'Conversation One', detail:'完整听 3–4 分钟对话，先抓人物关系、场景和分歧。' },
+      2:{ label:'Conversation Two', detail:'完整听 3–4 分钟对话，留意转折、建议和最终决定。' },
+      3:{ label:'Passage One', detail:'完整听 3–4 分钟短文，抓主题句、事例与结论。' },
+      4:{ label:'Passage Two', detail:'完整听 3–4 分钟短文，抓时间、因果和细节。' },
+      5:{ label:'Recording One', detail:'完整听 3–4 分钟录音，先理清主旨和逻辑结构。' },
+      6:{ label:'Recording Two', detail:'完整听 3–4 分钟录音，抓观点、例证和转折。' },
+      0:{ label:'Recording Three', detail:'完整听 3–4 分钟录音，完成本套第 7 段学习。' }
     };
     const phases = [
-      {id:'diagnosis',label:'启动诊断',start:'10/8',end:'10/11',text:'建立墨墨、错题表与周复盘；10月10日完成首次诊断模考。'},
+      {id:'diagnosis',label:'启动诊断',start:'10/8',end:'10/11',text:'建立墨墨、错题表与周复盘；10月10日按上班日轻量执行，10月17日完成首次诊断模考。'},
       {id:'foundation',label:'基础带学',start:'10/12',end:'11/1',text:'完成技巧课，并用分项真题立即练习。'},
       {id:'practice',label:'真题强化',start:'11/2',end:'12/6',text:'每周六15:00完整模考，周日复盘并明确两项短板。'},
       {id:'final',label:'考前收口',start:'12/7',end:'12/11',text:'易忘词、核心句、写译表达与作息优先。'}
@@ -65,39 +81,57 @@
     function esc(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));}
     function weekIndex(date){const n=daysBetween(date,START);return n<=3?0:Math.min(9,1+Math.floor((n-4)/7));}
     function phaseFor(date){const n=daysBetween(date,START);return n<=3?phases[0]:n<=24?phases[1]:n<=59?phases[2]:phases[3];}
+    function sparkPaper(date){return SPARK_PAPERS[weekIndex(date)];}
+    function sparkSegment(date){
+      if(weekIndex(date)===0){return ({4:SPARK_SEGMENTS[1],5:SPARK_SEGMENTS[2],6:SPARK_SEGMENTS[3],0:SPARK_SEGMENTS[4]})[date.getDay()];}
+      return SPARK_SEGMENTS[date.getDay()];
+    }
+    function sparkSegmentOrder(date){if(weekIndex(date)===0)return ({4:1,5:2,6:3,0:4})[date.getDay()];return date.getDay()===0?7:date.getDay();}
+    function sparkLabel(date){const paper=sparkPaper(date), segment=sparkSegment(date);return paper.review?`星火英语 · ${paper.label} · ${segment.label}`:`星火英语 · ${paper.label} · ${segment.label}`;}
+    function sparkDeskDetail(date){const paper=sparkPaper(date), segment=sparkSegment(date), sundayNote=date.getDay()===0?' 完成后在星火预选下周周一的 Conversation One，并确认文本可用。':'';if(paper.review)return `在星火打开本轮最弱的一套的对应段落：先盲听，再用逐句精听核对，最后关掉文本复述。${sundayNote}`;return `${segment.detail} 使用“逐句精听”核对听漏处；记录不超过 3 个难点，最后关掉文本复述主旨。${sundayNote}`;}
     function coursePath(date){const w=weekIndex(date);if(w===0)return COURSE+'01 六级核心技巧/';if(w===1)return COURSE+'01 六级核心技巧/09.【听力】技巧与例题（1).mp4';if(w===2)return COURSE+'01 六级核心技巧/06 【阅读】段落匹配技巧精讲.mp4';if(w===3)return COURSE+'01 六级核心技巧/16.六级全程班【写作】第一段写作.mp4';if(w===4)return COURSE+'05 23年12月真题讲解/';if(w===5)return COURSE+'06 24年06月真题讲解/';if(w===6)return COURSE+'07 24年12月真题精讲/';if(w===7)return COURSE+'08 25年06月真题精讲/';if(w===8)return COURSE+'11 全真模考/';return COURSE+'01 六级核心技巧/';}
-    function eveningTask(date){const w=weekIndex(date),d=date.getDay();if(w===0)return ({4:'建立墨墨、错题表与周复盘表；完成词汇方法论＋听力技巧入门',5:'仔细阅读2篇限时＋定位复盘；完成一段翻译',6:'15:00完整诊断模考；只记录分数和感受',0:'逐题复盘诊断模考；登记错因；预排第2周'})[d];if(w===9)return ({1:'词汇与核心句回炉',2:'写作翻译表达库默写',3:'轻量听力＋错题回看',4:'最后一次轻量分项训练',5:'整理准考用品，22:30前休息'})[d]||'墨墨周测＋轻量复盘';if(w>=4){return ({1:'听力分项＋精讲只看错题',2:'阅读分项＋精讲只看错题',3:'写作1篇＋翻译1段，提取表达',4:'模考弱项专项训练60分钟',5:'轻量复习＋周六模考准备',6:'15:00完整限时模考；结束后仅记录结果',0:'模考逐题复盘；明确两项最大短板'})[d];}const blocks=[['听力技巧课40分钟＋听力分项1套','听力精听：错题二听、复述核心句','仔细阅读2篇限时＋定位依据','听力课后训练＋错题归因','本周错题回炉；写作或翻译1项','词汇回顾30分钟＋分项综合训练','本周分项复盘；预排下周'],['仔细阅读技巧课＋2篇限时练习','段落匹配技巧课＋1篇训练','听力分项1套＋精听5句','选词填空技巧课＋1篇训练','本周阅读错题回炉；翻译1段','词汇回顾30分钟＋阅读组合训练','本周分项复盘；预排下周'],['写作课＋作文1篇：限时30分钟','翻译课＋翻译1段：限时30分钟','听力分项1套＋精听错题','仔细阅读2篇＋定位复盘','写作/翻译二选一：完成第二稿','词汇回顾30分钟＋写译综合训练','本周分项复盘；预排下周']];const block=blocks[Math.min(2,w-1)];return block[d===0?6:d-1];}
-    function weekdayTasks(item){const tuesdayOrThursday=[2,4].includes(item.date.getDay()), isBBC=tuesdayOrThursday;const link=isBBC?LINKS.bbc:LINKS.voa;return [
-      {id:'audio-out',kind:'audio',stage:'去程开车',title:isBBC?'BBC 6 Minute English：听本周固定专题':'VOA慢速英语：听本周固定合集',detail:'只听音频，不看屏幕、不查词；疲劳时休息。',planned:60,link},
+    function eveningTask(date){const w=weekIndex(date),d=date.getDay();if(w===0)return ({4:'建立墨墨、错题表与周复盘表；完成词汇方法论＋听力技巧入门',5:'仔细阅读2篇限时＋定位复盘；完成一段翻译',6:'听力技巧入门＋错题表补全；不安排模考',0:'本周学习复盘；确认第2周真题与网课安排'})[d];if(w===9)return ({1:'词汇与核心句回炉',2:'写作翻译表达库默写',3:'轻量听力＋错题回看',4:'最后一次轻量分项训练',5:'整理准考用品，22:30前休息'})[d]||'墨墨周测＋轻量复盘';if(w>=4){return ({1:'听力分项＋精讲只看错题',2:'阅读分项＋精讲只看错题',3:'写作1篇＋翻译1段，提取表达',4:'模考弱项专项训练60分钟',5:'轻量复习＋周六模考准备',6:'15:00完整限时模考；结束后仅记录结果',0:'模考逐题复盘；明确两项最大短板'})[d];}const blocks=[['听力技巧课40分钟＋听力分项1套','听力精听：错题二听、复述核心句','仔细阅读2篇限时＋定位依据','听力课后训练＋错题归因','本周错题回炉；写作或翻译1项','词汇回顾30分钟＋分项综合训练','本周分项复盘；预排下周'],['仔细阅读技巧课＋2篇限时练习','段落匹配技巧课＋1篇训练','听力分项1套＋精听5句','选词填空技巧课＋1篇训练','本周阅读错题回炉；翻译1段','词汇回顾30分钟＋阅读组合训练','本周分项复盘；预排下周'],['写作课＋作文1篇：限时30分钟','翻译课＋翻译1段：限时30分钟','听力分项1套＋精听错题','仔细阅读2篇＋定位复盘','写作/翻译二选一：完成第二稿','词汇回顾30分钟＋写译综合训练','本周分项复盘；预排下周']];const block=blocks[Math.min(2,w-1)];return block[d===0?6:d-1];}
+    function weekdayTasks(item){const segment=sparkSegment(item.date), label=sparkLabel(item.date);return [
+      {id:'audio-out',kind:'audio',stage:'去程开车',title:label,detail:`先完整听本段 2–3 遍，再按状态轻松循环；单程是音频窗口，不要求用满 60 分钟。驾驶中只听音频，不看屏幕、查词、记笔记或出声跟读。`,planned:60,spark:label},
       {id:'momo-go',kind:'momo',stage:'去程地铁',title:'墨墨：先完成待复习，再学10–20个新词',detail:'固定30分钟。复习量过大时只完成到期复习。',planned:30},
-      {id:'metro-back',kind:'momo',stage:'返程地铁',title:tuesdayOrThursday?'墨墨易忘词＋TED-Ed英文字幕':'墨墨易忘词复习',detail:tuesdayOrThursday?'墨墨10–15分钟；再看固定TED-Ed 10–15分钟。':'复习10–15分钟，剩余时间休息。',planned:tuesdayOrThursday?30:15,link:tuesdayOrThursday?LINKS.ted:null},
-      {id:'audio-back',kind:'audio',stage:'返程开车',title:isBBC?'重复早晨BBC内容':'重复早晨VOA内容',detail:'第二遍只关注能辨认出的词块，不做理解测试。',planned:60,link},
-      {id:'night',kind:'deep',stage:'晚间75分钟',title:eveningTask(item.date),detail:'课程或真题任务；同一错因出现3次再回看对应网课。',planned:75,path:coursePath(item.date)},
+      {id:'metro-back',kind:'momo',stage:'返程地铁',title:'墨墨易忘词复习',detail:'复习10–15分钟，剩余时间休息。',planned:15},
+      {id:'audio-back',kind:'audio',stage:'返程开车',title:`${label}：复听`,detail:`完整复听本段 2–3 遍，留意早上没有抓住的信息；剩余通勤时间自由休息。驾驶中不看屏幕、不查词、不记笔记或出声跟读。`,planned:60,spark:label},
+      {id:'spark-desk',kind:'audio',stage:'晚间20分钟（不驾驶）',title:`精听今日第${['','一','二','三','四','五','六','七'][sparkSegmentOrder(item.date)]}段：${segment.label}`,detail:sparkDeskDetail(item.date),planned:20,spark:label},
+      {id:'night',kind:'deep',stage:'晚间55分钟',title:eveningTask(item.date),detail:'课程或真题任务；同一错因出现3次再回看对应网课。',planned:55,path:coursePath(item.date)},
       {id:'words',kind:'vocab',stage:'晚间15分钟',title:'主动回忆当天5个易忘词',detail:'遮住释义，回忆词义、读音和一个搭配。',planned:15}
     ];}
-    function weekendTasks(item){const isSat=item.date.getDay()===6, w=weekIndex(item.date);if(isSat&&w>=4&&w<=8)return [
+    function weekendTasks(item){const isSat=item.date.getDay()===6, w=weekIndex(item.date);if(isSat&&w===1)return [
       {id:'momo-week',kind:'momo',stage:'上午',title:'墨墨：到期复习＋本周重点词回顾',detail:'不新增大量单词。',planned:30},
+      {id:'spark-desk',kind:'audio',stage:'上午20分钟（不驾驶）',title:`精听今日第六段：${sparkSegment(item.date).label}`,detail:sparkDeskDetail(item.date),planned:20,spark:sparkLabel(item.date)},
+      {id:'mock-ready',kind:'deep',stage:'考前准备',title:'首次诊断模考前轻复习与准备',detail:'只看核心句和错题，不刷新题。',planned:20,path:coursePath(item.date)},
+      {id:'mock',kind:'deep',stage:'15:00模考',title:'首次完整诊断模考',detail:'严格按六级时间完成整套题；当天只记录分数和时间问题。',planned:145,path:coursePath(item.date)},
+      {id:'words',kind:'vocab',stage:'晚间',title:'整理本周易忘词',detail:'每词只保留一个常用搭配或例句。',planned:15}
+    ];if(isSat&&w>=4&&w<=8)return [
+      {id:'momo-week',kind:'momo',stage:'上午',title:'墨墨：到期复习＋本周重点词回顾',detail:'不新增大量单词。',planned:30},
+      {id:'spark-desk',kind:'audio',stage:'上午20分钟（不驾驶）',title:`精听今日第六段：${sparkSegment(item.date).label}`,detail:sparkDeskDetail(item.date),planned:20,spark:sparkLabel(item.date)},
       {id:'mock-ready',kind:'deep',stage:'考前准备',title:'模考前轻复习与准备',detail:'只看核心句和错题，不刷新题。',planned:20,path:coursePath(item.date)},
       {id:'mock',kind:'deep',stage:'15:00模考',title:'完整限时模考',detail:'严格按六级时间完成整套题。',planned:145,path:coursePath(item.date)},
       {id:'mock-note',kind:'deep',stage:'考后',title:'记录分数与时间问题',detail:'当天不深度复盘。',planned:20},
       {id:'words',kind:'vocab',stage:'晚间',title:'整理本周易忘词',detail:'每词只保留一个常用搭配或例句。',planned:15}
     ];if(isSat)return [
       {id:'momo-week',kind:'momo',stage:'上午',title:'墨墨：到期复习＋本周重点词回顾',detail:'不新增大量单词。',planned:30},
+      {id:'spark-desk',kind:'audio',stage:'上午20分钟（不驾驶）',title:`精听今日第六段：${sparkSegment(item.date).label}`,detail:sparkDeskDetail(item.date),planned:20,spark:sparkLabel(item.date)},
       {id:'integrated',kind:'deep',stage:'上午',title:'综合训练：课程输出或分项真题',detail:'完成题目后再查看对应讲解。',planned:90,path:coursePath(item.date)},
       {id:'practice',kind:'deep',stage:'下午',title:w===0?'15:00完整诊断模考':'分项实战训练',detail:w===0?'只记录分数和感受。':'听力、阅读或写译组合训练。',planned:w===0?145:90,path:coursePath(item.date)},
       {id:'words',kind:'vocab',stage:'晚间',title:'整理本周易忘词',detail:'每词保留一个搭配或例句。',planned:15}
     ];return [
       {id:'momo-test',kind:'momo',stage:'上午',title:'墨墨随机自测20个重点词',detail:'仍不会的继续标记易忘词。',planned:30},
-      {id:'review',kind:'deep',stage:'上午',title:'逐题复盘与错因归类',detail:'只分为词汇、理解、定位、技巧、时间或表达。',planned:120,path:coursePath(item.date)},
+      {id:'review',kind:'deep',stage:'上午',title:'逐题复盘与错因归类',detail:'只分为词汇、理解、定位、技巧、时间或表达。',planned:95,path:coursePath(item.date)},
+      {id:'spark-desk',kind:'audio',stage:'上午25分钟（不驾驶）',title:`精听今日第七段：${sparkSegment(item.date).label}`,detail:`${sparkDeskDetail(item.date)} 完成后在星火预选下周周一的 Conversation One，并确认文本可用。`,planned:25,spark:sparkLabel(item.date)},
       {id:'weakness',kind:'deep',stage:'下午',title:'错因专项训练或对应课程回看',detail:'围绕本次模考最突出的两项短板训练。',planned:75,path:coursePath(item.date)},
       {id:'next-week',kind:'deep',stage:'晚间',title:'预排下周固定任务',detail:'只确认下周的主任务与资料，历史未完成任务不会加入下周。',planned:20},
       {id:'words',kind:'vocab',stage:'晚间',title:'易忘词主动回忆',detail:'回忆词义、读音和搭配。',planned:15}
     ];}
-    function buildSchedule(){const out=[];for(let d=cloneDate(START);d<=END;d.setDate(d.getDate()+1)){const date=cloneDate(d),weekend=[0,6].includes(date.getDay()),w=weekIndex(date);const item={date,key:localKey(date),week:weekMeta[w][0],weekName:weekMeta[w][1],phase:phaseFor(date),weekend};item.tasks=weekend?weekendTasks(item):weekdayTasks(item);out.push(item);}return out;}
+    function buildSchedule(){const out=[];for(let d=cloneDate(START);d<=END;d.setDate(d.getDate()+1)){const date=cloneDate(d),workSaturday=date.getFullYear()===2026&&date.getMonth()===9&&date.getDate()===10,weekend=date.getDay()===6&&!workSaturday,w=weekIndex(date);const item={date,key:localKey(date),week:weekMeta[w][0],weekName:weekMeta[w][1],phase:phaseFor(date),weekend};item.tasks=weekend?weekendTasks(item):weekdayTasks(item);out.push(item);}return out;}
     const schedule=buildSchedule(), taskByKey=new Map();schedule.forEach(item=>item.tasks.forEach(task=>taskByKey.set(`${item.key}:${task.id}`,{...task,date:item.date,dateKey:item.key})));
-    function taskHtml(task,item){const key=`${item.key}:${task.id}`,done=!!state.completed[key];const resource=task.link?`<a class="source-link" target="_blank" rel="noopener noreferrer" href="${esc(task.link.url)}">${esc(task.link.label)} ↗</a>`:'';const path=task.path?`<span class="badge path" title="${esc(task.path)}">本地路径：${esc(task.path)}</span>`:'';return `<article class="task ${done?'done':''}"><div class="task-top"><div class="task-stage">${esc(task.stage)}</div><div class="task-copy"><div class="task-title">${esc(task.title)}</div><div class="task-detail">${esc(task.detail)}</div></div></div><div class="task-meta"><span class="badge">预计 ${task.planned} 分钟</span>${resource}${path}</div><div class="task-actions"><label class="complete-control"><input type="checkbox" data-task-key="${key}" aria-label="${esc(task.title)}：已完成" ${done?'checked':''} onchange="toggleComplete('${key}')"><span>已完成</span></label></div></article>`;}
+    function taskHtml(task,item){const key=`${item.key}:${task.id}`,done=!!state.completed[key];const resource=task.link?`<a class="source-link" target="_blank" rel="noopener noreferrer" href="${esc(task.link.url)}">${esc(task.link.label)} ↗</a>`:'';const spark=task.spark?`<span class="badge path" title="${esc(task.spark)}">${esc(task.spark)}</span>`:'';const path=task.path?`<span class="badge path" title="${esc(task.path)}">本地路径：${esc(task.path)}</span>`:'';return `<article class="task ${done?'done':''}"><div class="task-top"><div class="task-stage">${esc(task.stage)}</div><div class="task-copy"><div class="task-title">${esc(task.title)}</div><div class="task-detail">${esc(task.detail)}</div></div></div><div class="task-meta"><span class="badge">预计 ${task.planned} 分钟</span>${resource}${spark}${path}</div><div class="task-actions"><label class="complete-control"><input type="checkbox" data-task-key="${key}" aria-label="${esc(task.title)}：已完成" ${done?'checked':''} onchange="toggleComplete('${key}')"><span>已完成</span></label></div></article>`;}
     function todayItem(){const now=new Date();return now<START?schedule[0]:(schedule.find(x=>x.key===localKey(now))||schedule.at(-1));}
-    function renderToday(){const item=todayItem(),completed=item.tasks.filter(t=>state.completed[`${item.key}:${t.id}`]).length,pct=Math.round(completed/item.tasks.length*100);document.getElementById('page-today').innerHTML=`<div class="section-head"><h2>${new Date()<START?'启动日前的准备':'今天的执行清单'}</h2><span>${md(item.date)} · ${weekday(item.date)} · ${item.week}</span></div><div class="today-layout"><div class="card today-card"><div class="today-heading"><strong>${esc(item.phase.label)}</strong><span>${esc(item.weekName)}</span></div><div class="task-list">${item.tasks.map(t=>taskHtml(t,item)).join('')}</div></div><aside class="side-stack"><div class="card summary-card"><div class="progress-head"><strong>今日完成</strong><span>${completed}/${item.tasks.length}</span></div><div class="track"><div class="fill" style="width:${pct}%"></div></div><p class="small-copy">任务以当天安排为准；未完成项仅留在当天记录中，不会添加到之后的计划。</p></div><div class="notice"><b>默认资源已安排</b><br>周一、三、五使用固定VOA合集；周二、四使用固定BBC专题，并在返程地铁加入固定TED-Ed短视频。</div></aside></div><div class="section-head"><h2>阶段路线</h2><span>课程搭框架，真题负责检验</span></div><div class="phase-grid">${phases.map(p=>`<div class="phase"><div class="date">${p.start}–${p.end}</div><h3>${p.label}</h3><p>${p.text}</p></div>`).join('')}</div>`;}
+    function renderToday(){const item=todayItem(),completed=item.tasks.filter(t=>state.completed[`${item.key}:${t.id}`]).length,pct=Math.round(completed/item.tasks.length*100);document.getElementById('page-today').innerHTML=`<div class="section-head"><h2>${new Date()<START?'启动日前的准备':'今天的执行清单'}</h2><span>${md(item.date)} · ${weekday(item.date)} · ${item.week}</span></div><div class="today-layout"><div class="card today-card"><div class="today-heading"><strong>${esc(item.phase.label)}</strong><span>${esc(item.weekName)}</span></div><div class="task-list">${item.tasks.map(t=>taskHtml(t,item)).join('')}</div></div><aside class="side-stack"><div class="card summary-card"><div class="progress-head"><strong>今日完成</strong><span>${completed}/${item.tasks.length}</span></div><div class="track"><div class="fill" style="width:${pct}%"></div></div><p class="small-copy">任务以当天安排为准；未完成项仅留在当天记录中，不会添加到之后的计划。</p></div><div class="notice"><b>每周一套星火真题</b><br>周一至周日依次完成 2 个 Conversation、2 个 Passage 和 3 个 Recording；每段约 3–4 分钟，驾驶中只听，逐句精听在晚间完成。</div></aside></div><div class="section-head"><h2>阶段路线</h2><span>课程搭框架，真题负责检验</span></div><div class="phase-grid">${phases.map(p=>`<div class="phase"><div class="date">${p.start}–${p.end}</div><h3>${p.label}</h3><p>${p.text}</p></div>`).join('')}</div>`;}
     function renderPlan(){const filtered=scheduleFilter==='all'?schedule:schedule.filter(x=>x.phase.id===scheduleFilter),groups=[];filtered.forEach(item=>{let g=groups.at(-1);if(!g||g.week!==item.week){g={week:item.week,name:item.weekName,items:[]};groups.push(g);}g.items.push(item);});document.getElementById('page-plan').innerHTML=`<div class="section-head"><h2>65天每日计划</h2><span>展开日期，勾选已完成任务</span></div><div class="filters">${[{id:'all',label:'全部'},...phases.map(p=>({id:p.id,label:p.label}))].map(f=>`<button class="filter ${scheduleFilter===f.id?'active':''}" onclick="setFilter('${f.id}')">${f.label}</button>`).join('')}</div>${groups.map((g,gi)=>`<section class="week-group"><div class="week-title">${g.week} · ${g.name}<span>${g.items.length}天</span></div>${g.items.map((item,i)=>{const open=expandedDays.has(item.key);return `<article class="card day-card"><button class="day-summary ${open?'open':''}" aria-expanded="${open}" aria-controls="tasks-${item.key}" onclick="toggleDay('${item.key}')"><div class="day-date">${md(item.date)}<small>${weekday(item.date)}</small></div><div class="day-main">${esc(item.tasks.find(t=>t.id==='night'||t.id==='mock'||t.id==='integrated'||t.id==='review')?.title||item.tasks[0].title)}<small>${item.phase.label} · ${item.tasks.length}项任务</small></div><span class="expand" id="exp-${item.key}">${open?'收起':'展开'}</span></button><div class="day-tasks ${open?'open':''}" id="tasks-${item.key}">${item.tasks.map(t=>taskHtml(t,item,true)).join('')}</div></article>`;}).join('')}</section>`).join('')}`;}
     function completionFor(item){const done=item.tasks.filter(task=>state.completed[`${item.key}:${task.id}`]).length;return {done,total:item.tasks.length,pct:Math.round(done/item.tasks.length*100)};}
     function renderCompletion(){
